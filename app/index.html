@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#101820">
+    <title>Budget Tap</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="topbar" aria-label="Budget status">
+        <div>
+          <p class="eyebrow">Budget Tap</p>
+          <h1>New expense</h1>
+        </div>
+        <button class="icon-button" id="settingsButton" type="button" aria-label="Settings">⚙</button>
+      </section>
+
+      <form id="expenseForm" class="expense-form">
+        <label class="amount-field">
+          <span>Amount</span>
+          <div class="amount-input">
+            <span>$</span>
+            <input id="amount" name="amount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" required autofocus>
+          </div>
+        </label>
+
+        <label>
+          <span>Merchant</span>
+          <input id="merchant" name="merchant" type="text" placeholder="Where did it go?">
+        </label>
+
+        <fieldset>
+          <legend>Kind</legend>
+          <div class="segmented four">
+            <label><input type="radio" name="kind" value="Discretionary" checked><span>Discretionary</span></label>
+            <label><input type="radio" name="kind" value="Essentials"><span>Essentials</span></label>
+            <label><input type="radio" name="kind" value="Savings"><span>Savings</span></label>
+            <label><input type="radio" name="kind" value="Emergency"><span>Emergency</span></label>
+          </div>
+        </fieldset>
+
+        <label>
+          <span>Category</span>
+          <select id="category" name="category"></select>
+        </label>
+
+        <fieldset>
+          <legend>Card / account</legend>
+          <div class="segmented two">
+            <label><input type="radio" name="card" value="Cap 1" checked><span>Cap 1</span></label>
+            <label><input type="radio" name="card" value="Cap 2"><span>Cap 2</span></label>
+            <label><input type="radio" name="card" value="Hereford"><span>Hereford</span></label>
+            <label><input type="radio" name="card" value="Credit card"><span>Credit card</span></label>
+          </div>
+        </fieldset>
+
+        <label>
+          <span>Note</span>
+          <textarea id="note" name="note" rows="2" placeholder="Optional"></textarea>
+        </label>
+
+        <button class="submit-button" type="submit">Save expense</button>
+        <p id="status" class="status" role="status"></p>
+      </form>
+
+      <section class="recent-panel" aria-label="Recent expenses">
+        <div class="section-heading">
+          <h2>Recent</h2>
+          <button id="syncButton" type="button">Sync queued</button>
+        </div>
+        <ul id="recentList" class="recent-list"></ul>
+      </section>
+
+      <dialog id="settingsDialog">
+        <form method="dialog" class="settings">
+          <div class="section-heading">
+            <h2>Settings</h2>
+            <button class="icon-button" value="close" aria-label="Close">×</button>
+          </div>
+          <label>
+            <span>Google Apps Script URL</span>
+            <input id="endpoint" type="url" placeholder="https://script.google.com/macros/s/.../exec">
+          </label>
+          <label>
+            <span>Sheet name</span>
+            <input id="sheetName" type="text" value="Expense Log">
+          </label>
+          <button id="saveSettings" class="submit-button" type="button">Save settings</button>
+          <p class="helper">Expenses are saved locally first. If the Sheet endpoint is set, the app also sends them to Google Sheets.</p>
+        </form>
+      </dialog>
+    </main>
+    <script src="./app.js"></script>
+  </body>
+</html>

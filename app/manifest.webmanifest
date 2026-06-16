@@ -1,0 +1,9 @@
+{
+  "name": "Budget Tap",
+  "short_name": "Budget Tap",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f6f4",
+  "theme_color": "#101820",
+  "icons": []
+}
