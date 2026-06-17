@@ -76,15 +76,18 @@ function renderRecent() {
 async function postExpense(expense) {
   if (!state.settings.endpoint) return false;
 
-  const response = await fetch(state.settings.endpoint, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({ sheetName: state.settings.sheetName, expense }),
-  });
+const response = await fetch(state.settings.endpoint, {
+  method: "POST",
+  headers: {
+    "Content-Type": "text/plain;charset=utf-8",
+  },
+  body: JSON.stringify({
+    sheetName: state.settings.sheetName,
+    expense,
+  }),
+});
 
-  return response.type === "opaque" || response.ok;
-}
+console.log(await response.text());}
 
 async function syncQueued() {
   const queued = state.expenses.filter((expense) => !expense.synced);
