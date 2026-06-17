@@ -81,7 +81,7 @@ h2 {
 
 .expense-form,
 .recent-panel,
-dialog {
+.settings {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel);
@@ -281,12 +281,25 @@ textarea:focus {
   font-weight: 900;
 }
 
-dialog {
-  width: min(calc(100vw - 28px), 500px);
-  padding: 0;
+.settings-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: end center;
+  background: rgba(16, 24, 32, 0.4);
+  padding: 14px;
 }
 
-dialog::backdrop {
+.settings-modal[hidden] {
+  display: none;
+}
+
+.settings {
+  width: min(100%, 500px);
+}
+
+.settings-modal::backdrop {
   background: rgba(16, 24, 32, 0.4);
 }
 

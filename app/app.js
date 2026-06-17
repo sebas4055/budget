@@ -80,7 +80,7 @@ function renderRecent() {
       <span class="recent-title">${expense.merchant || expense.category}</span>
       <span class="recent-amount">${money(expense.amount)}</span>
       <span class="recent-meta">${expense.kind} · ${expense.card} · ${expense.category}</span>
-      <span class="recent-meta">${expense.synced ? "Synced" : "Queued"}</span>
+      <span class="recent-meta">${expense.synced ? "Sent" : "Queued"}</span>
     `;
     recentList.append(item);
   }
@@ -89,18 +89,17 @@ async function postExpense(expense) {
   if (!state.settings.endpoint) return false;
 
   try {
-    const res = await fetch(state.settings.endpoint, {
+    await fetch(state.settings.endpoint, {
       method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({
         sheetName: state.settings.sheetName,
         expense,
       }),
     });
 
-    const text = await res.text();
-    console.log("SYNC RESPONSE:", text);
-
-    return res.ok;
+    return true;
   } catch (err) {
     console.log("SYNC ERROR:", err);
     return false;
@@ -117,7 +116,7 @@ async function syncQueued() {
 
   if (!state.settings.endpoint) {
     setStatus("Add your Google Apps Script URL in settings first.", "warn");
-    settingsDialog.showModal();
+    openSettings();
     return;
   }
 
@@ -136,7 +135,7 @@ async function syncQueued() {
 
   setStatus(
     synced
-      ? `Synced ${synced} expense${synced === 1 ? "" : "s"}.`
+      ? `Sent ${synced} expense${synced === 1 ? "" : "s"}.`
       : "Sync failed. Still queued.",
     synced ? "good" : "bad"
   );
@@ -193,10 +192,20 @@ form.addEventListener("submit", async (event) => {
 });
 
 document.querySelector("#settingsButton").addEventListener("click", () => {
+  openSettings();
+});
+
+function openSettings() {
   endpointInput.value = state.settings.endpoint;
   sheetNameInput.value = state.settings.sheetName;
-  settingsDialog.showModal();
-});
+  settingsDialog.hidden = false;
+}
+
+function closeSettings() {
+  settingsDialog.hidden = true;
+}
+
+document.querySelector("#closeSettings").addEventListener("click", closeSettings);
 
 document.querySelector("#saveSettings").addEventListener("click", () => {
   state.settings.endpoint = endpointInput.value.trim();
@@ -204,7 +213,7 @@ document.querySelector("#saveSettings").addEventListener("click", () => {
     sheetNameInput.value.trim() || "Expense Log";
 
   saveLocal();
-  settingsDialog.close();
+  closeSettings();
 
   setStatus("Settings saved.", "good");
 });
