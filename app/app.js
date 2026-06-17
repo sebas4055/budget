@@ -76,15 +76,13 @@ function renderRecent() {
 async function postExpense(expense) {
   if (!state.settings.endpoint) return false;
 
-try {
-  const res = await fetch(state.settings.endpoint, {
-    method: "POST",
-    body: JSON.stringify({
-      sheetName: state.settings.sheetName,
-      expense
-    })
-  });
-
+fetch(endpoint, {
+  method: "POST",
+  body: JSON.stringify({
+    sheetName,
+    expense
+  })
+});
   const text = await res.text();
   console.log("SYNC RESPONSE:", text);
 
