@@ -1,5 +1,11 @@
 const categoriesByKind = {
-  Discretionary: ["Discretionary spending pool", "Restaurants / coffee", "Fun / summer plans", "Shopping / personal", "Miscellaneous"],
+  Discretionary: [
+    "Discretionary spending pool",
+    "Restaurants / coffee",
+    "Fun / summer plans",
+    "Shopping / personal",
+    "Miscellaneous"
+  ],
   Essentials: ["Rent", "Groceries", "Gas", "Storage unit", "Health", "Personal"],
   Savings: ["Savings transfer", "Emergency fund", "Long-term savings"],
   Emergency: ["Car", "Medical", "Family", "Unexpected bill", "Other emergency"],
@@ -7,7 +13,10 @@ const categoriesByKind = {
 
 const state = {
   expenses: JSON.parse(localStorage.getItem("budgetTap.expenses") || "[]"),
-  settings: JSON.parse(localStorage.getItem("budgetTap.settings") || '{"endpoint":"","sheetName":"Expense Log"}'),
+  settings: JSON.parse(
+    localStorage.getItem("budgetTap.settings") ||
+      '{"endpoint":"","sheetName":"Expense Log"}'
+  ),
 };
 
 const form = document.querySelector("#expenseForm");
@@ -19,7 +28,10 @@ const endpointInput = document.querySelector("#endpoint");
 const sheetNameInput = document.querySelector("#sheetName");
 
 function money(value) {
-  return Number(value).toLocaleString(undefined, { style: "currency", currency: "USD" });
+  return Number(value).toLocaleString(undefined, {
+    style: "currency",
+    currency: "USD",
+  });
 }
 
 function selected(name) {
@@ -54,9 +66,10 @@ function saveLocal() {
 function renderRecent() {
   recentList.innerHTML = "";
   const recent = state.expenses.slice(0, 8);
+
   if (recent.length === 0) {
     const empty = document.createElement("li");
-    empty.innerHTML = '<span class="recent-meta">No expenses yet.</span>';
+    empty.innerHTML = `<span class="recent-meta">No expenses yet.</span>`;
     recentList.append(empty);
     return;
   }
@@ -72,7 +85,6 @@ function renderRecent() {
     recentList.append(item);
   }
 }
-
 async function postExpense(expense) {
   if (!state.settings.endpoint) return false;
 
@@ -81,37 +93,23 @@ async function postExpense(expense) {
       method: "POST",
       body: JSON.stringify({
         sheetName: state.settings.sheetName,
-        expense
-      })
+        expense,
+      }),
     });
 
     const text = await res.text();
     console.log("SYNC RESPONSE:", text);
 
-    return true;
+    return res.ok;
   } catch (err) {
     console.log("SYNC ERROR:", err);
     return false;
   }
 }
 
-fetch(endpoint, {
-  method: "POST",
-  body: JSON.stringify({
-    sheetName,
-    expense
-  })
-});
-  const text = await res.text();
-  console.log("SYNC RESPONSE:", text);
-
-} catch (err) {
-  console.log("SYNC ERROR:", err);
-}  
-console.log(await response.text());}
-
 async function syncQueued() {
-  const queued = state.expenses.filter((expense) => !expense.synced);
+  const queued = state.expenses.filter((e) => !e.synced);
+
   if (queued.length === 0) {
     setStatus("Nothing queued.", "good");
     return;
@@ -124,20 +122,24 @@ async function syncQueued() {
   }
 
   let synced = 0;
+
   for (const expense of queued) {
-    try {
-      const ok = await postExpense(expense);
-      if (ok) {
-        expense.synced = true;
-        synced += 1;
-      }
-    } catch {
-      break;
+    const ok = await postExpense(expense);
+    if (ok) {
+      expense.synced = true;
+      synced++;
     }
   }
+
   saveLocal();
   renderRecent();
-  setStatus(synced ? `Synced ${synced} expense${synced === 1 ? "" : "s"}.` : "Sync failed. It is still queued.", synced ? "good" : "bad");
+
+  setStatus(
+    synced
+      ? `Synced ${synced} expense${synced === 1 ? "" : "s"}.`
+      : "Sync failed. Still queued.",
+    synced ? "good" : "bad"
+  );
 }
 
 form.addEventListener("change", (event) => {
@@ -146,48 +148,48 @@ form.addEventListener("change", (event) => {
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  try {
-    const data = new FormData(form);
-    const amount = Number(data.get("amount"));
-    if (!Number.isFinite(amount) || amount <= 0) {
-      setStatus("Enter an amount greater than zero.", "bad");
-      return;
-    }
 
-    const expense = {
-      id: createId(),
-      createdAt: new Date().toISOString(),
-      date: new Date().toLocaleDateString("en-CA"),
-      amount,
-      merchant: String(data.get("merchant") || "").trim(),
-      kind: selected("kind"),
-      category: data.get("category"),
-      card: selected("card"),
-      note: String(data.get("note") || "").trim(),
-      synced: false,
-    };
+  const data = new FormData(form);
+  const amount = Number(data.get("amount"));
 
-    state.expenses.unshift(expense);
-    saveLocal();
-    renderRecent();
-    form.reset();
-    document.querySelector('input[name="kind"][value="Discretionary"]').checked = true;
-    document.querySelector('input[name="card"][value="Cap 1"]').checked = true;
-    updateCategories("Discretionary");
-    document.querySelector("#amount").focus();
-
-    try {
-      expense.synced = await postExpense(expense);
-      saveLocal();
-      renderRecent();
-      setStatus(expense.synced ? "Sent to Google Sheets." : "Saved locally. Add endpoint to sync.", expense.synced ? "good" : "warn");
-    } catch {
-      setStatus("Saved locally. Sync failed, so it is queued.", "warn");
-    }
-  } catch (error) {
-    console.error(error);
-    setStatus("Could not save. Refresh and try again.", "bad");
+  if (!Number.isFinite(amount) || amount <= 0) {
+    setStatus("Enter an amount greater than zero.", "bad");
+    return;
   }
+
+  const expense = {
+    id: createId(),
+    createdAt: new Date().toISOString(),
+    date: new Date().toLocaleDateString("en-CA"),
+    amount,
+    merchant: String(data.get("merchant") || "").trim(),
+    kind: selected("kind"),
+    category: data.get("category"),
+    card: selected("card"),
+    note: String(data.get("note") || "").trim(),
+    synced: false,
+  };
+
+  state.expenses.unshift(expense);
+  saveLocal();
+  renderRecent();
+
+  form.reset();
+  document.querySelector('input[name="kind"][value="Discretionary"]').checked = true;
+  document.querySelector('input[name="card"][value="Cap 1"]').checked = true;
+  updateCategories("Discretionary");
+  document.querySelector("#amount").focus();
+
+  const ok = await postExpense(expense);
+  expense.synced = ok;
+
+  saveLocal();
+  renderRecent();
+
+  setStatus(
+    ok ? "Sent to Google Sheets." : "Saved locally (queued for sync).",
+    ok ? "good" : "warn"
+  );
 });
 
 document.querySelector("#settingsButton").addEventListener("click", () => {
@@ -198,9 +200,12 @@ document.querySelector("#settingsButton").addEventListener("click", () => {
 
 document.querySelector("#saveSettings").addEventListener("click", () => {
   state.settings.endpoint = endpointInput.value.trim();
-  state.settings.sheetName = sheetNameInput.value.trim() || "Expense Log";
+  state.settings.sheetName =
+    sheetNameInput.value.trim() || "Expense Log";
+
   saveLocal();
   settingsDialog.close();
+
   setStatus("Settings saved.", "good");
 });
 
