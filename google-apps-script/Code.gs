@@ -3,6 +3,14 @@ const DEFAULT_SHEET_NAME = "Expense Log";
 
 function doPost(e) {
   const payload = parsePayload_(e);
+  appendExpense_(payload);
+
+  return ContentService
+    .createTextOutput(JSON.stringify({ ok: true }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function appendExpense_(payload) {
   const expense = payload.expense || {};
   const sheetName = payload.sheetName || DEFAULT_SHEET_NAME;
   const sheet = getOrCreateSheet_(sheetName);
@@ -19,10 +27,6 @@ function doPost(e) {
     expense.note || "",
     expense.id || "",
   ]);
-
-  return ContentService
-    .createTextOutput(JSON.stringify({ ok: true }))
-    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function parsePayload_(e) {
@@ -33,7 +37,14 @@ function parsePayload_(e) {
   return JSON.parse((e && e.postData && e.postData.contents) || "{}");
 }
 
-function doGet() {
+function doGet(e) {
+  if (e && e.parameter && e.parameter.payload) {
+    appendExpense_(parsePayload_(e));
+    return ContentService
+      .createTextOutput(JSON.stringify({ ok: true, mode: "get-append" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   return ContentService
     .createTextOutput(JSON.stringify({ ok: true, app: "Budget Tap", spreadsheetIdSet: !SPREADSHEET_ID.includes("PASTE_") }))
     .setMimeType(ContentService.MimeType.JSON);

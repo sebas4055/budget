@@ -102,7 +102,7 @@ async function postExpense(expense) {
   if (!state.settings.endpoint) return false;
 
   try {
-    await postWithHiddenForm(state.settings.endpoint, {
+    await sendWithBeaconUrl(state.settings.endpoint, {
       sheetName: state.settings.sheetName,
       expense,
     });
@@ -111,6 +111,20 @@ async function postExpense(expense) {
     console.log("SYNC ERROR:", err);
     return false;
   }
+}
+
+function sendWithBeaconUrl(url, payload) {
+  return new Promise((resolve) => {
+    const separator = url.includes("?") ? "&" : "?";
+    const beaconUrl = `${url}${separator}payload=${encodeURIComponent(JSON.stringify(payload))}&_=${Date.now()}`;
+    const image = new Image();
+    const done = () => resolve();
+
+    image.onload = done;
+    image.onerror = done;
+    image.src = beaconUrl;
+    window.setTimeout(done, 2500);
+  });
 }
 
 function postWithHiddenForm(url, payload) {
