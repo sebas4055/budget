@@ -11,12 +11,21 @@ const categoriesByKind = {
   Emergency: ["Car", "Medical", "Family", "Unexpected bill", "Other emergency"],
 };
 
+function readJson(key, fallback) {
+  try {
+    return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
+  } catch {
+    localStorage.removeItem(key);
+    return fallback;
+  }
+}
+
 const state = {
-  expenses: JSON.parse(localStorage.getItem("budgetTap.expenses") || "[]"),
-  settings: JSON.parse(
-    localStorage.getItem("budgetTap.settings") ||
-      '{"endpoint":"","sheetName":"Expense Log"}'
-  ),
+  expenses: readJson("budgetTap.expenses", []),
+  settings: readJson("budgetTap.settings", {
+    endpoint: "",
+    sheetName: "Expense Log",
+  }),
 };
 
 const form = document.querySelector("#expenseForm");
@@ -26,6 +35,10 @@ const statusEl = document.querySelector("#status");
 const settingsDialog = document.querySelector("#settingsDialog");
 const endpointInput = document.querySelector("#endpoint");
 const sheetNameInput = document.querySelector("#sheetName");
+const settingsButton = document.querySelector("#settingsButton");
+const closeSettingsButton = document.querySelector("#closeSettings");
+const saveSettingsButton = document.querySelector("#saveSettings");
+const syncButton = document.querySelector("#syncButton");
 
 function money(value) {
   return Number(value).toLocaleString(undefined, {
@@ -220,23 +233,29 @@ form.addEventListener("submit", async (event) => {
   );
 });
 
-document.querySelector("#settingsButton").addEventListener("click", () => {
-  openSettings();
-});
+settingsButton?.addEventListener("click", openSettings);
 
 function openSettings() {
   endpointInput.value = state.settings.endpoint;
   sheetNameInput.value = state.settings.sheetName;
-  settingsDialog.hidden = false;
+  if (settingsDialog instanceof HTMLDialogElement) {
+    settingsDialog.showModal();
+  } else {
+    settingsDialog.hidden = false;
+  }
 }
 
 function closeSettings() {
-  settingsDialog.hidden = true;
+  if (settingsDialog instanceof HTMLDialogElement) {
+    settingsDialog.close();
+  } else {
+    settingsDialog.hidden = true;
+  }
 }
 
-document.querySelector("#closeSettings").addEventListener("click", closeSettings);
+closeSettingsButton?.addEventListener("click", closeSettings);
 
-document.querySelector("#saveSettings").addEventListener("click", () => {
+saveSettingsButton?.addEventListener("click", () => {
   state.settings.endpoint = endpointInput.value.trim();
   state.settings.sheetName =
     sheetNameInput.value.trim() || "Expense Log";
@@ -247,7 +266,7 @@ document.querySelector("#saveSettings").addEventListener("click", () => {
   setStatus("Settings saved.", "good");
 });
 
-document.querySelector("#syncButton").addEventListener("click", syncQueued);
+syncButton?.addEventListener("click", syncQueued);
 
 updateCategories();
 renderRecent();
