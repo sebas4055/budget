@@ -76,11 +76,21 @@ function renderRecent() {
 async function postExpense(expense) {
   if (!state.settings.endpoint) return false;
 
-await fetch(url, {
-  method: "POST",
-  body: JSON.stringify(data)
-});
-  
+try {
+  const res = await fetch(state.settings.endpoint, {
+    method: "POST",
+    body: JSON.stringify({
+      sheetName: state.settings.sheetName,
+      expense
+    })
+  });
+
+  const text = await res.text();
+  console.log("SYNC RESPONSE:", text);
+
+} catch (err) {
+  console.log("SYNC ERROR:", err);
+}  
 console.log(await response.text());}
 
 async function syncQueued() {
