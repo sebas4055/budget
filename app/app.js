@@ -89,21 +89,50 @@ async function postExpense(expense) {
   if (!state.settings.endpoint) return false;
 
   try {
-    await fetch(state.settings.endpoint, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({
-        sheetName: state.settings.sheetName,
-        expense,
-      }),
+    await postWithHiddenForm(state.settings.endpoint, {
+      sheetName: state.settings.sheetName,
+      expense,
     });
-
     return true;
   } catch (err) {
     console.log("SYNC ERROR:", err);
     return false;
   }
+}
+
+function postWithHiddenForm(url, payload) {
+  return new Promise((resolve) => {
+    const frameName = `budgetTapSync${Date.now()}`;
+    const iframe = document.createElement("iframe");
+    iframe.name = frameName;
+    iframe.hidden = true;
+
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = url;
+    form.target = frameName;
+    form.hidden = true;
+
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "payload";
+    input.value = JSON.stringify(payload);
+
+    form.append(input);
+    document.body.append(iframe, form);
+    iframe.addEventListener("load", () => {
+      form.remove();
+      iframe.remove();
+      resolve();
+    }, { once: true });
+
+    form.submit();
+    window.setTimeout(() => {
+      form.remove();
+      iframe.remove();
+      resolve();
+    }, 3000);
+  });
 }
 
 async function syncQueued() {

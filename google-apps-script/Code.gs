@@ -2,7 +2,7 @@ const SPREADSHEET_ID = "PASTE_YOUR_SPREADSHEET_ID_HERE";
 const DEFAULT_SHEET_NAME = "Expense Log";
 
 function doPost(e) {
-  const payload = JSON.parse(e.postData.contents || "{}");
+  const payload = parsePayload_(e);
   const expense = payload.expense || {};
   const sheetName = payload.sheetName || DEFAULT_SHEET_NAME;
   const sheet = getOrCreateSheet_(sheetName);
@@ -23,6 +23,14 @@ function doPost(e) {
   return ContentService
     .createTextOutput(JSON.stringify({ ok: true }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+function parsePayload_(e) {
+  if (e && e.parameter && e.parameter.payload) {
+    return JSON.parse(e.parameter.payload);
+  }
+
+  return JSON.parse((e && e.postData && e.postData.contents) || "{}");
 }
 
 function doGet() {
